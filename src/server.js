@@ -1,0 +1,20 @@
+import dotenv from 'dotenv';
+import app from './app.js';
+import connectDB from './config/db.js';
+
+// Load environment variables
+dotenv.config();
+
+const PORT = process.env.PORT || 5000;
+
+const startServer = async () => {
+  // Connect to MongoDB
+  await connectDB();
+  
+  // Start Express server only after MongoDB connection succeeds
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
+startServer();
