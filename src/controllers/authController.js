@@ -14,14 +14,16 @@ export const login = async (req, res, next) => {
     const admin = await Admin.findOne({ email });
     if (admin && admin.isActive && (await bcrypt.compare(password, admin.passwordHash))) {
       const token = generateToken(admin._id);
+      const isProduction = process.env.NODE_ENV === 'production';
       res.cookie('jwt', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-domain cookies (Vercel -> Render)
         maxAge: 60 * 60 * 1000 // 1 hour
       });
       res.json({
         success: true,
+        token, // Provide token so frontend can use localStorage/Authorization header if cookies are blocked by cross-site policies
         data: { _id: admin._id, name: admin.name, email: admin.email, role: admin.role }
       });
     } else {
